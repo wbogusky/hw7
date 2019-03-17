@@ -1,3 +1,6 @@
+// This file was made with help from Michael Toren's Musical Bounces
+// available here: https://editor.p5js.org/toren/sketches/BymLlkGi7
+
 var squares = [];
 var shapes = [];
 var sounds = [];
