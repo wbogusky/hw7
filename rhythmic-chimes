@@ -1,0 +1,118 @@
+var squares = [];
+var shapes = [];
+var sounds = [];
+
+var shapeTotal = 10; // accessible variable at the top of file means less searching
+var tempo = 120;
+
+function preload() {
+  soundFormats('m4a');
+  for (var i = 0; i < shapeTotal; i++) {
+    sounds.push(loadSound('glockenspiel.m4a')); // load sounds into array
+  }
+}
+
+function setup() {
+    createCanvas(400, 400);
+    frameRate(tempo/60); // slow down frames to control 'tempo'
+    background(230);
+
+    for (var i = 0; i < sounds.length; i++) {
+      let sound = sounds[i];
+      sound.rate(0.25*pow(2, (i)/12)); // change pitches of sound filese
+    }
+
+    for (x = 0; x < width; x += width / 8) {
+        for (y = 0; y < height; y += height / 8) {
+            squares.push({ // creating our background grid squares in an array
+                x: x,
+                y: y,
+                xlength: width / 8,
+                ylength: height / 8,
+                corner: 10,
+                color: 190,
+            });
+        }
+    }
+
+    var xStarts = [width/16, width-width/16, width/2-width/16, width/2+width/16];
+    var yStarts = [height/16, height-height/16, height/2-height/16, height/2+height/16];
+    var directions = [-2, -1, 1, 2]; // uses numerical values to represent up, left, right, down
+    var resetDirections = [-1, 1];
+
+    for (i=0; i < shapeTotal; i++){
+      let sound = sounds[i];
+
+      shapes.push({ // creating array of random circles with movement attributes
+        x: random(xStarts),
+        y: random(yStarts),
+        initDir: random(directions),
+        secDir: random(directions),
+        r: 20,
+        red: random(255),
+        green: random(255),
+        blue: random(255),
+        chime: sound,
+      });
+    }
+
+}
+
+function draw() {
+  background(230);
+
+  for (i = 0; i < squares.length; i++) { // draw grid
+    let square = squares[i];
+
+    stroke(230);
+    strokeWeight(3);
+    fill(square.color);
+    rect(square.x, square.y, square.xlength, square.ylength, square.corner);
+  }
+
+  for (i=0; i<shapes.length; i++){
+    let shape = shapes[i];
+
+    noStroke();
+    fill(shape.red, shape.green, shape.blue, 150);
+    ellipse(shape.x, shape.y, shape.r); // draw circles
+
+    if (shape.initDir == -1 || shape.initDir == 1){
+      shape.x += shape.initDir*width/8;
+    } // behavior for left/right circles
+
+    if (shape.initDir == -2 || shape.initDir == 2){
+      shape.y += shape.initDir*width/16;
+    } // behavior for up/down circles
+
+    if (shape.x > width){
+      shape.x = width/16;
+      shape.y += shape.secDir*height/8;
+    } // right edge reset
+
+    if (shape.x < 0){
+      shape.x = width-width/16;
+      shape.y += shape.secDir*height/8;
+    } // left edge reset
+
+    if (shape.y > height){
+      shape.y = height/16;
+      shape.x += shape.secDir*width/8;
+    } // bottom edge reset
+
+    if (shape.y < 0){
+      shape.y = height-height/16;
+      shape.x += shape.secDir*width/8;
+    } // top edge reset
+
+    for (j = i + 1; j < shapes.length; j++){
+      let other = shapes[j];
+
+      if (dist(shape.x, shape.y, other.x, other.y) === 0){ // play sounds
+        shape.chime.play();
+        other.chime.play();
+        rect(shape.x-width/16, shape.y-height/16, width/8, height/8, 10)
+      }
+    }
+  }
+}
